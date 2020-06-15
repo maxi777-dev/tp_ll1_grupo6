@@ -26,6 +26,7 @@ class Gramatica():
         #A continuacion vamos a confeccionar una lista con todos los terminales de la gramatica        
         self.terminales = [x for i in concecuentes for x in i.split(' ')] #Por cada consecuente, si esta separado por un espacio, lo dividimos con el .split(' ')
         self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
+        self.terminales = list(set(self.terminales))
         self.terminales.append('$') #Agregamos el no terminal $
         print('Terminales: ', self.terminales)
 
@@ -89,6 +90,7 @@ class Gramatica():
                                     break
                             else:
                                 x +=1
+        Conjunto_First = list(set(Conjunto_First))
         firstset[no_ter]=Conjunto_First
         return Conjunto_First
 
