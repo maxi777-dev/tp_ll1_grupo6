@@ -6,34 +6,46 @@ class Gramatica():
         producciones = gramatica.split("\n") 
 
         antecedentes = [i.split(':', 1)[0] for i in producciones] #Obtenemos una lista con los antecedentes de la gramatica
-        concecuentes = [i.split(':', 1)[1] for i in producciones] #Obtenemos una lista con los consecuentes de la gramatica
+        consecuentes = [i.split(':', 1)[1] for i in producciones] #Obtenemos una lista con los consecuentes de la gramatica
         producciones = [i.split(':', 1) for i in producciones] #Obtenemos una lista con todas las producciones de la gramatica
-        print("producciones: ", producciones)
+        
 
         self.diccionario = dict.fromkeys(antecedentes) #Creamos un diccionario con los antecedentes
 
-        '''Con el siguiente FOR completamos el diccionario, es decir, cada no terminal será una key o indice del diccionario, y seguido
-        de cada no terminal tendremos una lista de todas las derivaciones de dicho no terminal''' 
 
-        for i in producciones: 
-            if (self.diccionario[i[0]] == None): #Si el diccionario cuya key es i[0] está vacio:                 
-                self.diccionario[i[0]] = [i[1]] #agregamos el consecuente de la "key" directamente                 
-            else:
-                self.diccionario[i[0]].append(i[1]) #sino, incertamos el concecuente a la lista con un append. Esto se debe a que no podemos hacer
-                                                    #un append a algo None
-        print('Diccionario: ', self.diccionario) 
 
-        #A continuacion vamos a confeccionar una lista con todos los terminales de la gramatica        
-        self.terminales = [x for i in concecuentes for x in i.split(' ')] #Por cada consecuente, si esta separado por un espacio, lo dividimos con el .split(' ')
+        #-------------------------------------Lista de terminales de la gramatica------------------------------------- 
+        
+          
+        self.terminales = [x for i in consecuentes for x in i.split(' ')] #Por cada consecuente, si esta separado por un espacio, lo dividimos con el .split(' ')
         self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
         self.terminales = list(set(self.terminales))
         self.terminales.append('$') #Agregamos el no terminal $
         print('Terminales: ', self.terminales)
 
+        #-------------------------------------Lista de no terminales de la gramatica-------------------------------------
 
-        self.no_terminales = list(dict.fromkeys(antecedentes)) #Para finalizar hacemos una lista de No Terminales, los cuales serán las keys del diccionario
+        self.no_terminales = list(dict.fromkeys(antecedentes)) 
         print('No Terminales: ', self.no_terminales)
+
+        for regla in producciones:
+            regla[1] = regla[1].replace(" ","")        #saco los espacios de la gramatica                     
+        print("producciones: ", producciones)
+
+        #-------------------------------------Realizamos un diccionario con las producciones (keys: no terminales, values: derivacion del NT)-------------------------------------
+
+        for i in producciones: 
+            if (self.diccionario[i[0]] == None): #Si el diccionario cuya key es i[0] está vacio:                 
+                self.diccionario[i[0]] = [i[1]]  #agregamos el consecuente de la "key" directamente                 
+            else:
+                self.diccionario[i[0]].append(i[1]) #sino, insertamos el consecuente a la lista con un append. Esto se debe a que no podemos hacer
+                                                    #un append a algo None
         
+        print('Diccionario: ', self.diccionario) 
+
+        #-------------------------------------Llamar al metodo isLL1-------------------------------------
+
+
         esLL1 = self.isLL1()
         if (esLL1):
             mensaje = " La gramatica es LL(1)"
@@ -53,28 +65,30 @@ class Gramatica():
             Indica si la gramática es o no LL1.
         """
         for i in self.no_terminales:
-            Fi=self.first(i)
-            #Fo=self.follow(i)
+            Fi=self.first(i)            
             firstset[i]=Fi
-            #followset[i]=Fo
-        
-        print(firstset)
-        #print(followset)
+            Fo=self.follow(i)
+            followset[i]=Fo
+
+        print('FIRSTS :', firstset)
+        print('FOLLOWS :' , followset)
 
         return True
 
-    def first(self, no_ter):
-        Conjunto_First=[]
+    def first(self, no_ter): #no_ter es un string
+
+        Conjunto_First=[] 
         length=0
-        if(no_ter in self.terminales):
+
+        if(no_ter in self.terminales):   
             Conjunto_First.extend(no_ter)
         else:
-            for i in self.diccionario[no_ter]:
+            for i in self.diccionario[no_ter]:  #Recorremos las reglas del no terminal
                 x = 0
-                if((i[0] in self.terminales) or (i == 'lambda')):
+                if((i[0] in self.terminales) or (i == 'lambda')):     #si el primer simbolo es un terminal, lo añadimos al conj first
                     if (i != 'lambda'):
                         Conjunto_First.extend(i[0])
-                    else:
+                    else:                                             
                         if('lambda' not in Conjunto_First):
                             Conjunto_First.append('lambda')
                 else:
@@ -90,15 +104,18 @@ class Gramatica():
                                     break
                             else:
                                 x +=1
+
         Conjunto_First = list(set(Conjunto_First))
         firstset[no_ter]=Conjunto_First
+
         return Conjunto_First
 
 
     def follow(self, no_ter):
-        foll=[]
-        if(no_ter=='E'): #si es el AXIOMA
-            foll.extend('$')
+        fo = []
+        axioma = list(self.diccionario.keys())[0]
+        if(no_ter==axioma): 
+            fo.extend('$')
         for key in self.diccionario.keys():
             vals=self.diccionario[key]
             for each in vals:
@@ -109,23 +126,23 @@ class Gramatica():
                         if(ctr<length-1):
                             if((no_ter != key)and('lambda'in self.first(each[ctr+1]))):
                                 for x in self.first(each[ctr+1]):
-                                    if((x not in foll)and(x!='lambda')):
-                                        foll.extend(x)
+                                    if((x not in fo)and(x!='lambda')):
+                                        fo.extend(x)
                                 for x in self.follow(key):
-                                    if((x not in foll)and(x!='lmbd')):
-                                        foll.extend(x)
+                                    if((x not in fo)and(x!='lambda')):
+                                        fo.extend(x)
                             else:
                                 for x in self.first(each[ctr+1]):
-                                    if((x not in foll)and(x!='lambda')):
-                                        foll.extend(x)
+                                    if((x not in fo)and(x!='lambda')):
+                                        fo.extend(x)
                         if((no_ter != key)and(ctr==length-1)):
                             for x in self.follow(key):
-                                if((x not in foll)and(x!='lambda')):
-                                    foll.extend(x)
+                                if((x not in fo)and(x!='lambda')):
+                                    fo.extend(x)
                     ctr+=1
                 ctr=0
-        followset[no_ter]=foll
-        return foll
+        followset[no_ter]=fo
+        return fo
 
 
     def parse(self, cadena):
