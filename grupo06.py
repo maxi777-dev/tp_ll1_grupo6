@@ -5,11 +5,11 @@ class Gramatica():
 
         
         self.gramatica = gramatica
-        producciones = gramatica.split("\n") 
+        self.producciones = gramatica.split("\n") 
 
-        antecedentes = [i.split(':', 1)[0] for i in producciones] #Obtenemos una lista con los antecedentes de la gramatica
-        consecuentes = [i.split(':', 1)[1] for i in producciones] #Obtenemos una lista con los consecuentes de la gramatica
-        producciones = [i.split(':', 1) for i in producciones] #Obtenemos una lista con todas las producciones de la gramatica
+        antecedentes = [i.split(':', 1)[0] for i in self.producciones] #Obtenemos una lista con los antecedentes de la gramatica
+        consecuentes = [i.split(':', 1)[1] for i in self.producciones] #Obtenemos una lista con los consecuentes de la gramatica
+        self.producciones = [i.split(':', 1) for i in self.producciones] #Obtenemos una lista con todas las producciones de la gramatica
         
 
         self.diccionario = dict.fromkeys(antecedentes) #Creamos un diccionario con los antecedentes
@@ -30,13 +30,13 @@ class Gramatica():
         self.no_terminales = list(dict.fromkeys(antecedentes)) 
         print('No Terminales: ', self.no_terminales)
 
-        for regla in producciones:
+        for regla in self.producciones:
             regla[1] = regla[1].replace(" ","")        #saco los espacios de la gramatica                     
-        print("producciones: ", producciones)
+        print("producciones: ", self.producciones)
 
         #-------------------------------------Realizamos un diccionario con las producciones (keys: no terminales, values: derivacion del NT)-------------------------------------
 
-        for i in producciones: 
+        for i in self.producciones: 
             if (self.diccionario[i[0]] == None): #Si el diccionario cuya key es i[0] está vacio:                 
                 self.diccionario[i[0]] = [i[1]]  #agregamos el consecuente de la "key" directamente                 
             else:
@@ -72,6 +72,7 @@ class Gramatica():
             Fo=self.follow(i)
             followset[i]=Fo
 
+        print('PRODUCCIONES:', self.producciones)
         print('FIRSTS :', firstset)
         print('FOLLOWS :' , followset)
 
@@ -104,6 +105,11 @@ class Gramatica():
                             else:                              
                                 Conjunto_First.extend(self.first(i[x]))
                                 break
+                for r in self.producciones:
+                    if ((r[0] == no_ter) and (r[1] == i )):
+                        if (len(r) == 2):
+                            r.extend(Conjunto_First)
+                            break
                                 
 
         Conjunto_First = list(set(Conjunto_First))
@@ -169,6 +175,7 @@ class Gramatica():
 
 firstset = {}
 followset = {}
+firstxregla = []
 
 if __name__ == "__main__":
     gramatica = Gramatica("S:b B X\nX:aAX\nX:lambda\nA:a B\nA:c\nB:d C\nC:bC\nC:lambda")
