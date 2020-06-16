@@ -57,6 +57,9 @@ class Gramatica():
             mensaje = " La gramatica no es LL(1)"
         print(esLL1, mensaje)
 
+        self.parse('bdac$')
+
+
         pass
 
     def isLL1(self):
@@ -89,14 +92,17 @@ class Gramatica():
                     selectlist.append(i)    
             selecttset[key] = selectlist
             x += 1
-
+        
         print('SELECTS: ', selecttset)
         print('-------------------------------------------------------------------------------------------------------------------------')
+
+        for key in selecttset.keys():
+            if (len(selecttset[key]) != len(set(selecttset[key]))):
+                return False
 
         return True
 
     def first(self, no_ter): #no_ter es un string
-
         Conjunto_First=[] 
         length=0
         x=0 
@@ -126,10 +132,9 @@ class Gramatica():
                         if (len(r) == 2):
                             r.extend(Conjunto_First)
                             break
-        Conjunto_First = list(set(Conjunto_First))
+        #Conjunto_First = list(set(Conjunto_First)) Posible error
         if (no_ter.isupper()):
             firstset[no_ter]=Conjunto_First
-
         return Conjunto_First
 
 
@@ -185,12 +190,41 @@ class Gramatica():
             Representación de las reglas a aplicar para derivar la cadenas
             utilizando la gramática.
         """
+        for i in self.no_terminales:
+            self.armarTabla(i)
+        self.printTabla()
         pass
+
+    def armarTabla(self, ip):
+        for i in self.diccionario[ip]: 
+            if ip not in tabla: 
+                tabla[ip]={}
+            if i[0] in self.terminales and i !='lambda':
+                if i[0] not in tabla[ip]:
+                    tabla[ip][i[0]]=[]
+                tabla[ip][i[0]].append(str(ip +" -> "+ i))
+            elif i == 'lambda':
+                for k in followset[ip]:
+                    if k not in tabla[ip]: 
+                        tabla[ip][k]=[]
+                    tabla[ip][k].append(str(ip +" -> "+ i))
+            else:
+                for k in firstset[ip]:
+                    if k not in tabla[ip]: 
+                        tabla[ip][k]=[]
+                    tabla[ip][k].append(str(ip + " -> "+i))
+        
+
+    def printTabla(self):
+        for i in tabla:
+            for j in tabla[i]:
+                for k in tabla[i][j]:
+                    print(i,"con",j,"es",k)
 
 firstset = {}
 followset = {}
 selecttset = {}
-firstxregla = []
+tabla = {}
 
 if __name__ == "__main__":
     gramatica = Gramatica("S:b B X\nX:a A X\nX:lambda\nA:a B\nA:c\nB:d Z\nZ:b Z\nZ:lambda")
