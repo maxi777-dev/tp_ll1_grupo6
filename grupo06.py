@@ -23,6 +23,7 @@ class Gramatica():
         self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
         self.terminales = list(set(self.terminales))
         self.terminales.append('$') #Agregamos el no terminal $
+        print('-------------------------------------------------------------------------------------------------------------------------')
         print('Terminales: ', self.terminales)
 
         #-------------------------------------Lista de no terminales de la gramatica-------------------------------------
@@ -44,6 +45,7 @@ class Gramatica():
                                                     #un append a algo None
         
         print('Diccionario: ', self.diccionario) 
+        print('-------------------------------------------------------------------------------------------------------------------------')
 
         #-------------------------------------Llamar al metodo isLL1-------------------------------------
 
@@ -72,9 +74,24 @@ class Gramatica():
             Fo=self.follow(i)
             followset[i]=Fo
 
-        print('PRODUCCIONES:', self.producciones)
+        #print('PRODUCCIONES:', self.producciones)
         print('FIRSTS :', firstset)
         print('FOLLOWS :' , followset)
+        
+        selectlist = []
+        x = 0
+        for key in firstset.keys():
+            selectlist = list(firstset[key])
+            if ('lambda' in firstset[key]):
+                selectlist.remove('lambda')
+                listafollows = list(followset[key])
+                for i in listafollows:
+                    selectlist.append(i)    
+            selecttset[key] = selectlist
+            x += 1
+
+        print('SELECTS: ', selecttset)
+        print('-------------------------------------------------------------------------------------------------------------------------')
 
         return True
 
@@ -83,7 +100,6 @@ class Gramatica():
         Conjunto_First=[] 
         length=0
         x=0 
-        
         if(no_ter in self.terminales):   
             Conjunto_First.extend(no_ter)
         else:
@@ -110,8 +126,6 @@ class Gramatica():
                         if (len(r) == 2):
                             r.extend(Conjunto_First)
                             break
-                                
-
         Conjunto_First = list(set(Conjunto_First))
         if (no_ter.isupper()):
             firstset[no_ter]=Conjunto_First
@@ -175,7 +189,8 @@ class Gramatica():
 
 firstset = {}
 followset = {}
+selecttset = {}
 firstxregla = []
 
 if __name__ == "__main__":
-    gramatica = Gramatica("S:b B X\nX:aAX\nX:lambda\nA:a B\nA:c\nB:d C\nC:bC\nC:lambda")
+    gramatica = Gramatica("S:b B X\nX:a A X\nX:lambda\nA:a B\nA:c\nB:d Z\nZ:b Z\nZ:lambda")
