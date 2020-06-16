@@ -1,7 +1,9 @@
 from collections import defaultdict
-
+                                                        #ANDA SI NO TIENE ESPACIOS EN S->' 'algo
 class Gramatica():
     def __init__(self, gramatica):
+
+        
         self.gramatica = gramatica
         producciones = gramatica.split("\n") 
 
@@ -47,7 +49,7 @@ class Gramatica():
 
 
         esLL1 = self.isLL1()
-        if (esLL1):
+        if (esLL1): 
             mensaje = " La gramatica es LL(1)"
         else:
             mensaje = " La gramatica no es LL(1)"
@@ -79,7 +81,8 @@ class Gramatica():
 
         Conjunto_First=[] 
         length=0
-
+        x=0 
+        
         if(no_ter in self.terminales):   
             Conjunto_First.extend(no_ter)
         else:
@@ -94,19 +97,18 @@ class Gramatica():
                 else:
                         length=len(i)
                         while(x<length):
-                            if (i[x] != ' '):
-                                if('lambda' in self.diccionario[i[x]]):
-                                    if (i[x] != no_ter):
-                                        Conjunto_First.extend(self.first(i[x]))
-                                    x+=1
-                                else:                              
+                            if('lambda' in self.diccionario[i[x]]):
+                                if (i[x] != no_ter):
                                     Conjunto_First.extend(self.first(i[x]))
-                                    break
-                            else:
-                                x +=1
+                                    x+=1
+                            else:                              
+                                Conjunto_First.extend(self.first(i[x]))
+                                break
+                                
 
         Conjunto_First = list(set(Conjunto_First))
-        firstset[no_ter]=Conjunto_First
+        if (no_ter.isupper()):
+            firstset[no_ter]=Conjunto_First
 
         return Conjunto_First
 
@@ -169,4 +171,4 @@ firstset = {}
 followset = {}
 
 if __name__ == "__main__":
-    gramatica = Gramatica("X:X Y\nX:A\nX:b\nX:lambda\nY:a\nY:d\nA:r")
+    gramatica = Gramatica("S:b B X\nX:aAX\nX:lambda\nA:a B\nA:c\nB:d C\nC:bC\nC:lambda")
