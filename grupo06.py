@@ -20,7 +20,14 @@ class Gramatica():
         
           
         self.terminales = [x for i in consecuentes for x in i.split(' ')] #Por cada consecuente, si esta separado por un espacio, lo dividimos con el .split(' ')
-        self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
+        #self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
+        vector = []
+        for i in self.terminales:
+            if (i[0].isupper()):
+                continue
+            else:
+                vector.append(i)
+        self.terminales = vector
         self.terminales = list(set(self.terminales))
         self.terminales.append('$') #Agregamos el no terminal $
         print('-------------------------------------------------------------------------------------------------------------------------')
@@ -52,13 +59,12 @@ class Gramatica():
 
         esLL1 = self.isLL1()
         if (esLL1): 
-            mensaje = " La gramatica es LL(1)"
+            print(esLL1, " La gramatica es LL(1)")
+            print('La tabla generada para la gramatica es la siguiente:')
+            print(' ')
+            self.parse('bdac$')
         else:
-            mensaje = " La gramatica no es LL(1)"
-        print(esLL1, mensaje)
-
-        self.parse('bdac$')
-
+            print(esLL1, " La gramatica NO es LL(1)")
 
         pass
 
@@ -115,24 +121,28 @@ class Gramatica():
                     if (i != 'lambda'):
                         Conjunto_First.extend(i[0])
                     else:                                             
-                        if('lambda' not in Conjunto_First):
+                        if(('lambda' not in Conjunto_First)):
                             Conjunto_First.append('lambda')
                 else:
                         length=len(i)
                         while(x<length):
-                            if('lambda' in self.diccionario[i[x]]):
-                                if (i[x] != no_ter):
-                                    Conjunto_First.extend(self.first(i[x]))
-                                    x+=1
-                            else:                              
-                                Conjunto_First.extend(self.first(i[x]))
-                                break
-                for r in self.producciones:
-                    if ((r[0] == no_ter) and (r[1] == i )):
-                        if (len(r) == 2):
-                            r.extend(Conjunto_First)
-                            break
-        #Conjunto_First = list(set(Conjunto_First)) Posible error
+                            if (i[x] in self.terminales):
+                                Conjunto_First.extend(i[x])
+                                x += 1
+                            else:
+                                if('lambda' in self.diccionario[i[x]]):
+                                    if (i[x] != no_ter):
+                                        Conjunto_First.extend(self.first(i[x]))
+                                        #x+=1
+                                    x += 1
+                                else:
+                                    if (no_ter != i[x]):                         
+                                        Conjunto_First.extend(self.first(i[x]))
+                                    else:
+                                        for j in self.diccionario[no_ter]:
+                                            if (j[0] != no_ter):
+                                                Conjunto_First.extend(self.first(j[0]))
+                                    break
         if (no_ter.isupper()):
             firstset[no_ter]=Conjunto_First
         return Conjunto_First
@@ -219,7 +229,7 @@ class Gramatica():
         for i in tabla:
             for j in tabla[i]:
                 for k in tabla[i][j]:
-                    print(i,"con",j,"es",k)
+                    print(i,":",j,":",k)
 
 firstset = {}
 followset = {}
@@ -227,4 +237,20 @@ selecttset = {}
 tabla = {}
 
 if __name__ == "__main__":
-    gramatica = Gramatica("S:b B X\nX:a A X\nX:lambda\nA:a B\nA:c\nB:d Z\nZ:b Z\nZ:lambda")
+    gramatica = Gramatica("E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E )")
+    #E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E ) ---> ES LL(1)
+    #E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E ) ---> NO ES LL(1)
+    #X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d ---> NO ES LL(1)
+    #X:X Y\nX:A\nX:b\nX:lambda\nY:a\nY:d\nA:r ---> NO ES LL(1)
+    #S:A b\nS:B a\nA:a A\nA:a\nB:a ---> NO ES LL(1)
+    #X:a S\nS:a Z\nS:b\nZ:b\nZ:a A b\nZ:lambda\nA:a A\nA:lambda ---> ES LL(1)
+    #E:E + E\nE:E - E\nE:( E )\nE:n ---> NO ES LL(1)
+    #S:A B c\nA:a\nA:lambda\nB:b\nB:lambda ---> ES LL(1)
+    #S:a S e\nA:B\nA:b B e\nA:C\nB:c e\nB:f\nC:b ---> NO ES LL(1)
+    #F:X Y\nX:a B R\nX:a C Q\nB:b\nB:d\nC:e\nC:b\nR:r\nQ:q\nY:b ---> NO ES LL(1)
+
+    """ PROBLEMAS QUE FALTAN SOLUCIONAR EN LOS FIRST:
+            1) En la G de ejemplo del TP, hay un X -> A y a no aparece del lado de los antecedentes. AHI ROMPE
+            2) En la ulitma gramatia, en los Fi de F, aparecen 2 'a' y tiene que aparecer una.
+                Igualmente, resuelve bien que no es LL(1)
+    """
