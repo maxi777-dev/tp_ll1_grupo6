@@ -57,7 +57,7 @@ class Gramatica():
             print(esLL1, " La gramatica es LL(1)")
             print('La tabla generada para la gramatica es la siguiente:')
             print(' ')
-            self.parse("(n)/(n)")
+            self.parse("(n)/n")
         else:
             print(esLL1, " La gramatica NO es LL(1)")
 
@@ -319,5 +319,9 @@ if __name__ == "__main__":
             1) En la G de ejemplo del TP, hay un X -> A y A no aparece del lado de los antecedentes. AHI ROMPE
             2) En la gramatica 10, en los Fi de F, aparecen 2 'a' y tiene que aparecer una.
                 Igualmente, resuelve bien que no es LL(1)
-            3) No anda con por ejemplo: Ab -> c [S:c X\nX:Ab X\nX:lambda\nAb:a b]
+            3) No anda con por ejemplo: Ab -> c [S:c X\nX:Ab X\nX:lambda\nAb:a b] SI TENEMOS NO TERMINALES CON MAS DE UNA LETRA NO ANDA
+
+        COMENTARIOS:
+            4) Comentar follow y armartabla
+            5) Preguntar a los profes acerca del (3) 
     """
