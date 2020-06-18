@@ -54,12 +54,23 @@ class Gramatica():
 
         esLL1 = self.isLL1()
         if (esLL1): 
-            print(esLL1, " La gramatica es LL(1)")
+            print("La gramatica ES LL(1)")
             print('La tabla generada para la gramatica es la siguiente:')
             print(' ')
-            self.parse("(n)/n")
+            cadena = "aaaaaaaaab"
+            derivacion = self.parse(cadena)
+            print(' ')
+            if (derivacion.split("-> ")[-1] == cadena):
+                print("La cadena '" + cadena +"' PUEDE ser representada mediante la gramatica propuesta  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
+            else:
+                print("La cadena '" + cadena +"' NO PUEDE ser representada mediante la gramatica propuesta  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
+            print(' ')
+            print('La cadena de derivacion de la cadena es la siguiente: ')
+            print(derivacion)
+            print(' ')
         else:
-            print(esLL1, " La gramatica NO es LL(1)")
+            print("La gramatica NO ES LL(1)")
+            print(' ')
 
         pass
 
@@ -72,11 +83,17 @@ class Gramatica():
         resultado : bool
             Indica si la gramática es o no LL1.
         """
+        vector_reglas = []
         for keys in self.diccionario:
             for reglas in self.diccionario.get(keys):
                 if (reglas[0] == keys):
-                    print("La gramática no es LL(1), debido a que presenta Recursión a Izquierda.")
-                    return False
+                    var = str(keys) + ' -> ' + str(reglas)
+                    vector_reglas.append(var)
+        if (len(vector_reglas) > 0):
+            print("La gramática presenta Recursión a Izquierda en las siguientes reglas: ")
+            for reglas in vector_reglas: 
+                print(reglas)
+            return False
         
         for i in self.no_terminales:
             Fi=self.first(i)            
@@ -150,13 +167,13 @@ class Gramatica():
 
 
     def follow(self, no_ter):
-        fo = []
+        Confjunto_Follow = []
         axioma = list(self.diccionario.keys())[0]
         if(no_ter==axioma): 
-            fo.extend('$')
+            Confjunto_Follow.extend('$')
         for key in self.diccionario.keys():
-            vals=self.diccionario[key]
-            for each in vals:
+            elemento = self.diccionario[key]
+            for each in elemento:
                 ctr=0
                 length=len(each)
                 for j in each:
@@ -164,23 +181,23 @@ class Gramatica():
                         if(ctr<length-1):
                             if((no_ter != key)and('lambda'in self.first(each[ctr+1]))):
                                 for x in self.first(each[ctr+1]):
-                                    if((x not in fo)and(x!='lambda')):
-                                        fo.extend(x)
+                                    if((x not in Confjunto_Follow)and(x!='lambda')):
+                                        Confjunto_Follow.extend(x)
                                 for x in self.follow(key):
-                                    if((x not in fo)and(x!='lambda')):
-                                        fo.extend(x)
+                                    if((x not in Confjunto_Follow)and(x!='lambda')):
+                                        Confjunto_Follow.extend(x)
                             else:
                                 for x in self.first(each[ctr+1]):
-                                    if((x not in fo)and(x!='lambda')):
-                                        fo.extend(x)
+                                    if((x not in Confjunto_Follow)and(x!='lambda')):
+                                        Confjunto_Follow.extend(x)
                         if((no_ter != key)and(ctr==length-1)):
                             for x in self.follow(key):
-                                if((x not in fo)and(x!='lambda')):
-                                    fo.extend(x)
+                                if((x not in Confjunto_Follow)and(x!='lambda')):
+                                    Confjunto_Follow.extend(x)
                     ctr+=1
                 ctr=0
-        followset[no_ter]=fo
-        return fo
+        followset[no_ter]=Confjunto_Follow
+        return Confjunto_Follow
 
 
     def parse(self, cadena):
@@ -206,12 +223,60 @@ class Gramatica():
             self.armarTabla(i)
         self.printTabla()
 
-        EsValidaLaCadena = self.ParsearCadena(cadena)
-        if (EsValidaLaCadena):
-            print ("La cadena es aceptada  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
-        else:
-            print ("La cadena NO es aceptada ノ(ಠ_ಠノ ) ")
-        pass
+        #bandera = True
+        cadena = cadena + "$"
+        axioma = self.no_terminales[0]
+        derivacion = ""
+        pila = []
+        
+        pila.append("$")
+        pila.append(axioma)
+
+        indice = 0
+        
+        while len(pila) > 0:
+            tope = pila[len(pila)-1] #sacamos la variable de encima de la pila
+            lookahead = cadena[indice]
+            if tope == lookahead: #si la variable de encima de la pila coincide con lo que nos llega en la cadena,
+                pila.pop()              #se elimina de la pila
+                indice = indice + 1	    #incrementamos el indice para leer el siguiente look-a-head
+            else:	
+                key = tope             
+                if ((key in self.terminales) or (lookahead not in tabla[key])): #si lo que esta en el tope de la pila es terminal o lo que leemos
+                    #bandera = False		                                        #de la cadena no se encuentra en la tabla, la cadena no pertenece
+                    break                                                       #a la gramatica
+                value = tabla[key][lookahead]
+                
+                elemento = value[0].split("-> ") #nos quedamos con el consecuente de la regla
+
+                if(derivacion == ""):
+                    derivacion = elemento[0] + " -> " +elemento[1]
+                else:                   
+                    derivacion2 = derivacion.split("-> ")[-1]
+                    derivacion += " -> "         
+                    reemplazo = elemento[0].replace(" ","")
+                    if (elemento[1] != 'lambda'):
+                        a = elemento[1]
+                    else:
+                        a = ""                      
+                    derivacion2 = derivacion2.replace(reemplazo,a, 1)
+                    derivacion += str(derivacion2)                
+
+                if elemento[1] != 'lambda':
+                    pila.pop()                                            
+                    i = len(elemento[1]) -1 
+                    while (i >= 0): #agregamos el consecuente de a un simbolo en la pila (de atras hacia adelante) 
+                        pila.append(elemento[1][i])
+                        i -= 1          
+                else:
+                    pila.pop()
+        
+        #if (bandera):
+         #   print ("La cadena es aceptada  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
+        #else:
+         #   print ("La cadena NO es aceptada ノ(ಠ_ಠノ ) ")
+        
+        return derivacion
 
     def armarTabla(self, ip):
         for i in self.diccionario[ip]: 
@@ -238,61 +303,6 @@ class Gramatica():
             for j in tabla[i]:
                 for k in tabla[i][j]:
                     print(i,":",j,":",k)
-
-
-    def ParsearCadena(self, cadena):
-        bandera = True
-        cadena = cadena + "$"
-        axioma = self.no_terminales[0]
-        derivacion = ""
-        pila = []
-        
-        pila.append("$")
-        pila.append(axioma)
-
-        indice = 0
-        
-        while len(pila) > 0:
-            tope = pila[len(pila)-1] #sacamos la variable de encima de la pila
-            #print ("Tope =>",tope)
-            lookahead = cadena[indice]
-            #print ("Lookahead => ",lookahead)
-            if tope == lookahead: #si la variable de encima de la pila coincide con lo que nos llega en la cadena,
-                pila.pop()              #se elimina de la pila
-                indice = indice + 1	    #incrementamos el indice para leer el siguiente look-a-head
-            else:	
-                key = tope             
-                if ((key in self.terminales) or (lookahead not in tabla[key])): #si lo que esta en el tope de la pila es terminal o lo que leemos
-                    bandera = False		                                        #de la cadena no se encuentra en la tabla, la cadena no pertenece
-                    break                                                       #a la gramatica
-                value = tabla[key][lookahead]
-                
-                elemento = value[0].split("-> ") #nos quedamos con el consecuente de la regla
-
-                if(derivacion == ""):
-                    derivacion = elemento[0] + " -> " +elemento[1]
-                else:                   
-                    derivacion2 = derivacion.split("-> ")[-1]
-                    derivacion += " -> "         
-                    reemplazo = elemento[0].replace(" ","")
-                    if (elemento[1] != 'lambda'):
-                        a = elemento[1]
-                    else:
-                        a = ""                      
-                    derivacion2 = derivacion2.replace(reemplazo,a, 1)
-                    derivacion += str(derivacion2)                
-
-                if elemento[1] != 'lambda':
-                    pila.pop()                                            
-                    i = len(elemento[1]) -1 
-                    while (i >= 0): #agregamos el consecuente de a un simbolo en la pila (de atras hacia adelante) 
-                        pila.append(elemento[1][i])
-                        i -= 1          
-                else:
-                    pila.pop()	
-
-        print("DERIVACION :",derivacion)
-        return bandera
         
 
 firstset = {}
@@ -303,7 +313,7 @@ tabla = {}
 
 
 if __name__ == "__main__":
-    gramatica = Gramatica("E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E )")
+    gramatica = Gramatica("X:a S\nS:a Z\nS:b\nZ:b\nZ:a A b\nZ:lambda\nA:a A\nA:lambda")
     #1) E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E ) ---> ES LL(1)
     #2) E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E ) ---> NO ES LL(1)
     #3) X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d ---> NO ES LL(1)
@@ -323,5 +333,4 @@ if __name__ == "__main__":
 
         COMENTARIOS:
             4) Comentar follow y armartabla
-            5) Preguntar a los profes acerca del (3) 
     """
