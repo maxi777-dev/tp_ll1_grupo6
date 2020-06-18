@@ -1,5 +1,5 @@
 from collections import defaultdict
-                                                        #ANDA SI NO TIENE ESPACIOS EN S->' 'algo
+                                        
 class Gramatica():
     def __init__(self, gramatica):
 
@@ -11,19 +11,15 @@ class Gramatica():
         consecuentes = [i.split(':', 1)[1] for i in self.producciones] #Obtenemos una lista con los consecuentes de la gramatica
         self.producciones = [i.split(':', 1) for i in self.producciones] #Obtenemos una lista con todas las producciones de la gramatica
         
-
         self.diccionario = dict.fromkeys(antecedentes) #Creamos un diccionario con los antecedentes
 
-
-
-        #-------------------------------------Lista de terminales de la gramatica------------------------------------- 
-        
+        #-------------------------------------Lista de terminales de la gramatica-------------------------------------         
           
         self.terminales = [x for i in consecuentes for x in i.split(' ')] #Por cada consecuente, si esta separado por un espacio, lo dividimos con el .split(' ')
         #self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
         vector = []
         for i in self.terminales:
-            if (i[0].isupper()):
+            if ((i == '') or (i[0].isupper())):
                 continue
             else:
                 vector.append(i)
@@ -56,13 +52,12 @@ class Gramatica():
 
         #-------------------------------------Llamar al metodo isLL1-------------------------------------
 
-
         esLL1 = self.isLL1()
         if (esLL1): 
             print(esLL1, " La gramatica es LL(1)")
             print('La tabla generada para la gramatica es la siguiente:')
             print(' ')
-            self.parse('bdac$')
+            self.parse("b")
         else:
             print(esLL1, " La gramatica NO es LL(1)")
 
@@ -77,16 +72,18 @@ class Gramatica():
         resultado : bool
             Indica si la gramática es o no LL1.
         """
+        for keys in self.diccionario:
+            for reglas in self.diccionario.get(keys):
+                if (reglas[0] == keys):
+                    print("La gramática no es LL(1), debido a que presenta Recursión a Izquierda.")
+                    return False
+        
         for i in self.no_terminales:
             Fi=self.first(i)            
             firstset[i]=Fi
             Fo=self.follow(i)
             followset[i]=Fo
 
-        #print('PRODUCCIONES:', self.producciones)
-        print('FIRSTS :', firstset)
-        print('FOLLOWS :' , followset)
-        
         selectlist = []
         x = 0
         for key in firstset.keys():
@@ -98,53 +95,57 @@ class Gramatica():
                     selectlist.append(i)    
             selecttset[key] = selectlist
             x += 1
-        
+
+        print('FIRSTS: ', firstset)
+        print('FOLLOWS: ' , followset)        
         print('SELECTS: ', selecttset)
         print('-------------------------------------------------------------------------------------------------------------------------')
 
+        EsLL1 = True
         for key in selecttset.keys():
             if (len(selecttset[key]) != len(set(selecttset[key]))):
-                return False
+                EsLL1 = False
+                break
 
-        return True
+        return EsLL1
 
     def first(self, no_ter): #no_ter es un string
         Conjunto_First=[] 
         length=0
         x=0 
         if(no_ter in self.terminales):   
-            Conjunto_First.extend(no_ter)
+            Conjunto_First.extend(no_ter) #si nos llega un terminal como paramentro, lo agregamos directamente al Conjunto_First
         else:
             for i in self.diccionario[no_ter]:  #Recorremos las reglas del no terminal
                 x = 0
-                if((i[0] in self.terminales) or (i == 'lambda')):     #si el primer simbolo es un terminal, lo añadimos al conj first
+                if((i[0] in self.terminales) or (i == 'lambda')): 
                     if (i != 'lambda'):
-                        Conjunto_First.extend(i[0])
+                        Conjunto_First.extend(i[0]) #si el primer simbolo es un terminal lo añadimos directamente al First
                     else:                                             
                         if(('lambda' not in Conjunto_First)):
-                            Conjunto_First.append('lambda')
+                            Conjunto_First.append('lambda') #Agregamos lambda al Conjunto_First
                 else:
                         length=len(i)
-                        while(x<length):
+                        while(x<length): #Recorremos el consecuente completo
                             if (i[x] in self.terminales):
-                                Conjunto_First.extend(i[x])
+                                Conjunto_First.extend(i[x]) #Si es terminal, lo agregamos al conjunto first
                                 x += 1
                             else:
-                                if('lambda' in self.diccionario[i[x]]):
-                                    if (i[x] != no_ter):
+                                if('lambda' in self.diccionario[i[x]]):#Si lambda se encuentra entre los consecuentes del No_Terminal evaluado 
+                                    if (i[x] != no_ter): #Para evitar la recursion izq. preguntamos si el No Terminal es distinto al que estamos evaluando
                                         Conjunto_First.extend(self.first(i[x]))
                                         #x+=1
                                     x += 1
                                 else:
-                                    if (no_ter != i[x]):                         
-                                        Conjunto_First.extend(self.first(i[x]))
+                                    if (no_ter != i[x]):      #Para evitar la recursion izq                   
+                                        Conjunto_First.extend(self.first(i[x])) #Llamamos al metodo First, pero con otro No Terminal
                                     else:
-                                        for j in self.diccionario[no_ter]:
-                                            if (j[0] != no_ter):
+                                        for j in self.diccionario[no_ter]: #Por cada consecuente del no terminal
+                                            if (j[0] != no_ter): #Para evitar la recursion izq
                                                 Conjunto_First.extend(self.first(j[0]))
                                     break
-        if (no_ter.isupper()):
-            firstset[no_ter]=Conjunto_First
+        if (no_ter.isupper()): #Puede suceder (debido a como planteamos los follows) que llegue como parametro un terminal
+            firstset[no_ter]=Conjunto_First 
         return Conjunto_First
 
 
@@ -196,13 +197,19 @@ class Gramatica():
 
         Returns
         -------
-        devivacion : string
+        derivacion : string
             Representación de las reglas a aplicar para derivar la cadenas
             utilizando la gramática.
         """
         for i in self.no_terminales:
             self.armarTabla(i)
         self.printTabla()
+
+        EsValidaLaCadena = self.ParsearCadena(cadena)
+        if (EsValidaLaCadena):
+            print ("La cadena es aceptada :)")
+        else:
+            print ("La cadena NO es aceptada :(")
         pass
 
     def armarTabla(self, ip):
@@ -231,26 +238,66 @@ class Gramatica():
                 for k in tabla[i][j]:
                     print(i,":",j,":",k)
 
+
+    def ParsearCadena(self, cadena):
+        bandera = True
+        cadena = cadena + "$"
+        axioma = self.no_terminales[0]
+
+        pila = []
+        
+        pila.append("$")
+        pila.append(axioma)
+
+        indice = 0
+        
+        while len(pila) > 0:
+            tope = pila[len(pila)-1] #sacamos la variable de encima de la pila
+            print ("Tope =>",tope)
+            lookahead = cadena[indice]
+            print ("Lookahead => ",lookahead)
+            if tope == lookahead: #si la variable de encima de la pila coincide con lo que nos llega en la cadena,
+                pila.pop()              #se elimina de la pila
+                indice = indice + 1	    #incrementamos el indice para leer el siguiente look-a-head
+            else:	
+                key = tope             
+                if ((key in self.terminales) or (lookahead not in tabla[key])): #si lo que esta en el tope de la pila es terminal o lo que leemos
+                    bandera = False		                                        #de la cadena no se encuentra en la tabla, la cadena no pertenece
+                    break                                                       #a la gramatica
+                value = tabla[key][lookahead]
+                elemento = value[0].split("-> ") #nos quedamos con el consecuente de la regla
+                if elemento[1] != 'lambda':
+                    pila.pop()                                            
+                    i = len(elemento[1]) -1 
+                    while (i >= 0): #agregamos el consecuente de a un simbolo en la pila (de atras hacia adelante) 
+                        pila.append(elemento[1][i])
+                        i -= 1          
+                else:
+                    pila.pop()	
+        return bandera
+        
+
 firstset = {}
 followset = {}
 selecttset = {}
 tabla = {}
 
 if __name__ == "__main__":
-    gramatica = Gramatica("E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E )")
-    #E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E ) ---> ES LL(1)
-    #E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E ) ---> NO ES LL(1)
-    #X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d ---> NO ES LL(1)
-    #X:X Y\nX:A\nX:b\nX:lambda\nY:a\nY:d\nA:r ---> NO ES LL(1)
-    #S:A b\nS:B a\nA:a A\nA:a\nB:a ---> NO ES LL(1)
-    #X:a S\nS:a Z\nS:b\nZ:b\nZ:a A b\nZ:lambda\nA:a A\nA:lambda ---> ES LL(1)
-    #E:E + E\nE:E - E\nE:( E )\nE:n ---> NO ES LL(1)
-    #S:A B c\nA:a\nA:lambda\nB:b\nB:lambda ---> ES LL(1)
-    #S:a S e\nA:B\nA:b B e\nA:C\nB:c e\nB:f\nC:b ---> NO ES LL(1)
-    #F:X Y\nX:a B R\nX:a C Q\nB:b\nB:d\nC:e\nC:b\nR:r\nQ:q\nY:b ---> NO ES LL(1)
+    gramatica = Gramatica("E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E )")
+    #1) E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E ) ---> ES LL(1)
+    #2) E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E ) ---> NO ES LL(1)
+    #3) X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d ---> NO ES LL(1)
+    #4) X:X Y\nX:A\nX:b\nX:lambda\nY:a\nY:d\nA:r ---> NO ES LL(1)
+    #5) S:A b\nS:B a\nA:a A\nA:a\nB:a ---> NO ES LL(1)
+    #6) X:a S\nS:a Z\nS:b\nZ:b\nZ:a A b\nZ:lambda\nA:a A\nA:lambda ---> ES LL(1)
+    #7) E:E + E\nE:E - E\nE:( E )\nE:n ---> NO ES LL(1)
+    #8) S:A B c\nA:a\nA:lambda\nB:b\nB:lambda ---> ES LL(1)
+    #9) S:a S e\nA:B\nA:b B e\nA:C\nB:c e\nB:f\nC:b ---> NO ES LL(1)
+    #10) F:X Y\nX:a B R\nX:a C Q\nB:b\nB:d\nC:e\nC:b\nR:r\nQ:q\nY:b ---> NO ES LL(1)
 
     """ PROBLEMAS QUE FALTAN SOLUCIONAR EN LOS FIRST:
-            1) En la G de ejemplo del TP, hay un X -> A y a no aparece del lado de los antecedentes. AHI ROMPE
-            2) En la ulitma gramatia, en los Fi de F, aparecen 2 'a' y tiene que aparecer una.
+            1) En la G de ejemplo del TP, hay un X -> A y A no aparece del lado de los antecedentes. AHI ROMPE
+            2) En la gramatica 10, en los Fi de F, aparecen 2 'a' y tiene que aparecer una.
                 Igualmente, resuelve bien que no es LL(1)
+            3) No anda con por ejemplo: Ab -> c [S:c X\nX:Ab X\nX:lambda\nAb:a b]
     """
