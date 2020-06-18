@@ -57,7 +57,7 @@ class Gramatica():
             print(esLL1, " La gramatica es LL(1)")
             print('La tabla generada para la gramatica es la siguiente:')
             print(' ')
-            self.parse("b")
+            self.parse("(n)/(n)")
         else:
             print(esLL1, " La gramatica NO es LL(1)")
 
@@ -201,15 +201,16 @@ class Gramatica():
             Representación de las reglas a aplicar para derivar la cadenas
             utilizando la gramática.
         """
+
         for i in self.no_terminales:
             self.armarTabla(i)
         self.printTabla()
 
         EsValidaLaCadena = self.ParsearCadena(cadena)
         if (EsValidaLaCadena):
-            print ("La cadena es aceptada :)")
+            print ("La cadena es aceptada  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
         else:
-            print ("La cadena NO es aceptada :(")
+            print ("La cadena NO es aceptada ノ(ಠ_ಠノ ) ")
         pass
 
     def armarTabla(self, ip):
@@ -243,7 +244,7 @@ class Gramatica():
         bandera = True
         cadena = cadena + "$"
         axioma = self.no_terminales[0]
-
+        derivacion = ""
         pila = []
         
         pila.append("$")
@@ -253,9 +254,9 @@ class Gramatica():
         
         while len(pila) > 0:
             tope = pila[len(pila)-1] #sacamos la variable de encima de la pila
-            print ("Tope =>",tope)
+            #print ("Tope =>",tope)
             lookahead = cadena[indice]
-            print ("Lookahead => ",lookahead)
+            #print ("Lookahead => ",lookahead)
             if tope == lookahead: #si la variable de encima de la pila coincide con lo que nos llega en la cadena,
                 pila.pop()              #se elimina de la pila
                 indice = indice + 1	    #incrementamos el indice para leer el siguiente look-a-head
@@ -265,7 +266,22 @@ class Gramatica():
                     bandera = False		                                        #de la cadena no se encuentra en la tabla, la cadena no pertenece
                     break                                                       #a la gramatica
                 value = tabla[key][lookahead]
+                
                 elemento = value[0].split("-> ") #nos quedamos con el consecuente de la regla
+
+                if(derivacion == ""):
+                    derivacion = elemento[0] + " -> " +elemento[1]
+                else:                   
+                    derivacion2 = derivacion.split("-> ")[-1]
+                    derivacion += " -> "         
+                    reemplazo = elemento[0].replace(" ","")
+                    if (elemento[1] != 'lambda'):
+                        a = elemento[1]
+                    else:
+                        a = ""                      
+                    derivacion2 = derivacion2.replace(reemplazo,a, 1)
+                    derivacion += str(derivacion2)                
+
                 if elemento[1] != 'lambda':
                     pila.pop()                                            
                     i = len(elemento[1]) -1 
@@ -274,6 +290,8 @@ class Gramatica():
                         i -= 1          
                 else:
                     pila.pop()	
+
+        print("DERIVACION :",derivacion)
         return bandera
         
 
@@ -282,8 +300,10 @@ followset = {}
 selecttset = {}
 tabla = {}
 
+
+
 if __name__ == "__main__":
-    gramatica = Gramatica("E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E )")
+    gramatica = Gramatica("E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E )")
     #1) E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E ) ---> ES LL(1)
     #2) E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E ) ---> NO ES LL(1)
     #3) X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d ---> NO ES LL(1)
