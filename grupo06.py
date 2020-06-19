@@ -288,10 +288,15 @@ class Gramatica():
                         i -= 1          
                 else:
                     pila.pop()
-
+        b == True
         longitud = len(derivacion)
-        if (derivacion[longitud-1] == ' '):
-            derivacion = derivacion[:-1]
+        while b == True:           
+            if (derivacion[longitud-1] == ' '): #Muchas derivaciones en lambda pueden dejar espacios al final de la cadena de derivacion
+                derivacion = derivacion[:-1]
+                longitud -= 1
+            else:
+                b = False
+
         return derivacion
 
     def armarTabla(self, ip):
