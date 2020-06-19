@@ -3,7 +3,11 @@ from collections import defaultdict
 class Gramatica():
     def __init__(self, gramatica):
 
-        
+        firstset.clear()
+        followset.clear()
+        selecttset.clear()
+        tabla.clear()
+
         self.gramatica = gramatica
         self.producciones = gramatica.split("\n") 
 
@@ -314,11 +318,16 @@ class Gramatica():
                     tabla[ip][k].append(str(ip +" -> "+ i))
             else:
                 for k in firstset[ip]:
-                    if k not in tabla[ip]: 
-                        tabla[ip][k]=[]
-                    tabla[ip][k].append(str(ip + " -> "+i))
-        
-
+                    if (k != 'lambda'):
+                        if k not in tabla[ip]: 
+                            tabla[ip][k]=[]
+                        tabla[ip][k].append(str(ip + " -> "+i))
+                    else:
+                        for k in followset[ip]:
+                           if (k not in tabla[ip]): 
+                              tabla[ip][k]=[]
+                            tabla[ip][k].append(str(ip +" -> "+ i))
+       
     def printTabla(self):
         for i in tabla:
             for j in tabla[i]:
