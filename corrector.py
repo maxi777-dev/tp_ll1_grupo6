@@ -8,7 +8,10 @@ module_file = [f.split('.')[0] for f in files if 'grupo' in f][0]
 grupo = importlib.import_module(module_file)
 
 grammars = [
-    ['X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d', True, ('bd$', 'X=>X Y=>b Y=>b d')]
+    #['S:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d', True, ('b d $', 'S=>X Y=>b Y=>b d')], --> good i guess
+    #['S:A\nA: B A\nA:lambda\nB:a B\nb', True, ('a a a b $', 'S=>A=>A B=>B=>a B=>a a B=>a a a B=>a a a b')], --> Le falta una regla, la cadena derivada es erronea
+    ['S:A B\nA:a A\nA:c\nA:lambda\nB:b B\nB:d', True, ('a a c d $', 'S=>A B=>a A B=>a a A B=>a a c B=>a a c d')], #la Regla A:a A viene como A: a A, ese espacio nos jode la cadena parseada
+    #['S:S C w c\nS:S D\nS:S E\nS:F\nS:F\nS:H', False, ('', 'S=>X Y=>b Y=>b d')] 
 ]
 
 for ix, grammar in enumerate(grammars):

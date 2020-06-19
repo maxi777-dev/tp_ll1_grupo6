@@ -9,12 +9,13 @@ class Gramatica():
         tabla.clear()
 
         self.gramatica = gramatica
-        self.producciones = gramatica.split("\n") 
+        self.producciones = gramatica.split("\n")
+
 
         antecedentes = [i.split(':', 1)[0] for i in self.producciones] #Obtenemos una lista con los antecedentes de la gramatica
         consecuentes = [i.split(':', 1)[1] for i in self.producciones] #Obtenemos una lista con los consecuentes de la gramatica
         self.producciones = [i.split(':', 1) for i in self.producciones] #Obtenemos una lista con todas las producciones de la gramatica
-        
+            
         self.diccionario = dict.fromkeys(antecedentes) #Creamos un diccionario con los antecedentes
 
         #-------------------------------------Lista de terminales de la gramatica-------------------------------------         
@@ -87,6 +88,7 @@ class Gramatica():
         resultado : bool
             Indica si la gramática es o no LL1.
         """
+
         vector_reglas = []
         for keys in self.diccionario:
             for reglas in self.diccionario.get(keys):
@@ -236,6 +238,9 @@ class Gramatica():
             Representación de las reglas a aplicar para derivar la cadenas
             utilizando la gramática.
         """
+        if (self.isLL1() == False):
+            return 'No es LL1 '
+
 
         for i in self.no_terminales:
             self.armarTabla(i)
@@ -316,15 +321,15 @@ class Gramatica():
                     if k not in tabla[ip]: 
                         tabla[ip][k]=[]
                     tabla[ip][k].append(str(ip +" -> "+ i))
-            else:
+            else: # es un no terminal
                 for k in firstset[ip]:
                     if (k != 'lambda'):
                         if k not in tabla[ip]: 
                             tabla[ip][k]=[]
-                        tabla[ip][k].append(str(ip + " -> "+i))
+                        tabla[ip][k].append(str(ip + " -> "+ i))
                     else:
                         for k in followset[ip]:
-                           if (k not in tabla[ip]): 
+                            if (k not in tabla[ip]): 
                               tabla[ip][k]=[]
                             tabla[ip][k].append(str(ip +" -> "+ i))
        
