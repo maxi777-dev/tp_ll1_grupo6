@@ -288,7 +288,7 @@ class Gramatica():
                         i -= 1          
                 else:
                     pila.pop()
-        b == True
+        b = True
         longitud = len(derivacion)
         while b == True:           
             if (derivacion[longitud-1] == ' '): #Muchas derivaciones en lambda pueden dejar espacios al final de la cadena de derivacion
