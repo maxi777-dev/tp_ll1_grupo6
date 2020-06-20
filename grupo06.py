@@ -128,7 +128,7 @@ class Gramatica():
         for key in selecttset.keys():
             if (len(selecttset[key]) != len(set(selecttset[key]))):
                 EsLL1 = False
-                break
+                break                   
 
         return EsLL1
 
@@ -154,6 +154,7 @@ class Gramatica():
                                 if (i[x] in self.terminales):
                                     Conjunto_First.extend(i[x]) #Si es terminal, lo agregamos al conjunto first
                                     x += 1
+                                    break
                                 else:
                                     if('lambda' in self.diccionario[i[x]]):#Si lambda se encuentra entre los consecuentes del No_Terminal evaluado 
                                         if (i[x] != no_ter): #Para evitar la recursion izq. preguntamos si el No Terminal es distinto al que estamos evaluando
@@ -185,7 +186,7 @@ class Gramatica():
 
 
     def follow(self, no_ter):
-        Confjunto_Follow = []
+        Confjunto_Follow = []               
         axioma = list(self.diccionario.keys())[0]
         if(no_ter==axioma): 
             Confjunto_Follow.extend('$')
@@ -328,12 +329,13 @@ class Gramatica():
                         if k not in tabla[ip]: 
                             tabla[ip][k]=[]
                         tabla[ip][k].append(str(ip + " -> "+ i))
-                    else:
+                    else: #si es lambda, nos tenemos que fijar cual regla es.
                         for k in followset[ip]:
                             if (k not in tabla[ip]): 
                                 tabla[ip][k]=[]
-                            if (i[-1] == i) or (i == 'lambda'):
+                            if (i[-1] == i):   
                                 tabla[ip][k].append(str(ip +" -> "+ i))
+              
        
     def printTabla(self):
         for i in tabla:
