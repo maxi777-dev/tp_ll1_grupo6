@@ -239,7 +239,7 @@ class Gramatica():
             utilizando la gramática.
         """
         if (self.isLL1() == False):
-            return 'No es LL1 '
+            return None
 
 
         for i in self.no_terminales:
@@ -306,6 +306,7 @@ class Gramatica():
             else:
                 b = False
 
+        derivacion = derivacion.replace("  "," ",1)
         return derivacion
 
     def armarTabla(self, ip):
@@ -330,8 +331,9 @@ class Gramatica():
                     else:
                         for k in followset[ip]:
                             if (k not in tabla[ip]): 
-                              tabla[ip][k]=[]
-                            tabla[ip][k].append(str(ip +" -> "+ i))
+                                tabla[ip][k]=[]
+                            if (i[-1] == i) or (i == 'lambda'):
+                                tabla[ip][k].append(str(ip +" -> "+ i))
        
     def printTabla(self):
         for i in tabla:
