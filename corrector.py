@@ -8,11 +8,12 @@ module_file = [f.split('.')[0] for f in files if 'grupo' in f][0]
 grupo = importlib.import_module(module_file)
 
 grammars = [
-    ['S:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d', True, ('b d $', 'S=>X Y=>b Y=>b d')],
-    ['S:A\nA:B A\nA:lambda\nB:a B\nB:b', True, ('a a a b $', 'S=>A=>B A=>a B A=>a a B A=>a a a B A=>a a a b A=>a a a b')],
-    ['S:A B\nA:a A\nA:c\nA:lambda\nB:b B\nB:d', True, ('a a c d $', 'S=>A B=>a A B=>a a A B=>a a c B=>a a c d')],
-    ['S:S C w c\nS:S D\nS:S E\nS:F\nS:F\nS:H', False, None],
-    ['E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:id\nF:( E )', True,('id / id $','E=>T A=>F B A=>id B A=>id / F B A=>id / id B A=>id / id A=>id / id')]
+    #['S:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d', True, ('b d $', 'S=>X Y=>b Y=>b d')],
+    #['S:A\nA:B A\nA:lambda\nB:a B\nB:b', True, ('a a a b $', 'S=>A=>B A=>a B A=>a a B A=>a a a B A=>a a a b A=>a a a b')],
+    #['S:A B\nA:a A\nA:c\nA:lambda\nB:b B\nB:d', True, ('a a c d $', 'S=>A B=>a A B=>a a A B=>a a c B=>a a c d')],
+    #['S:S C w c\nS:S D\nS:S E\nS:F\nS:F\nS:H', False, None],
+    #['E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:id\nF:( E )', True,('id / id $','E=>T A=>F B A=>id B A=>id / F B A=>id / id B A=>id / id A=>id / id')],
+    ['DL:Dec DL´\nDL´:Dec DL´\nDL´:lambda\nDec:IdList ; Type\nIdList:id IdList´\nIdList´:, id IdList´\nIdList´:lambda\nType:ScalarType\nType:array ( STL ) of Type\nScalarType:id ST´\nScalarType:Sign intlist ... Bound\nST´:... Bound\nST´:lambda\nBound:Sign intlist\nBound:id\nSign:+\nSign:-\nSign:lambda\nSTL:ScalarType . STL´\nSTL´:, ScalarType STL´\nSTL´:lambda', True, ('id ; id $', 'DL=>Dec DL´=>IdList ; Type DL´=>id IdList´ ; Type DL´=>id ; Type DL´=>id ; ScalarType DL´=>id ; id ST´ DL´=>id ; id DL´=>id ; id')]
 ]
 
 for ix, grammar in enumerate(grammars):

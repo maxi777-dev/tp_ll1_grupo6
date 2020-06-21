@@ -250,8 +250,6 @@ class Gramatica():
             self.armarTabla(i)
         self.printTabla()
 
-        #bandera = True
-        #cadena = cadena + "$"
         axioma = self.no_terminales[0]
         derivacion = ""
         pila = []
@@ -292,13 +290,13 @@ class Gramatica():
 
                 if elemento[1] != 'lambda':
                     pila.pop() 
-                    if (len(lista[indice]) > 1) and (lookahead in elemento[1]):
+                    if (len(lista[indice]) > 1) and (elemento[1] == lookahead): #ASI ESTABA ANTES Y PASABAN COSAS (lookahead in elemento[1]):
                         pila.append(lookahead)  
                     else:
-                        i = len(elemento[1]) -1 
+                        lista2 = elemento[1].split(" ")
+                        i = len(lista2) - 1 
                         while (i >= 0): #agregamos el consecuente de a un simbolo en la pila (de atras hacia adelante) 
-                            if (elemento[1][i] != ' '):
-                                pila.append(elemento[1][i])
+                            pila.append(lista2[i])
                             i -= 1          
                 else:
                     pila.pop()
