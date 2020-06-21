@@ -137,50 +137,52 @@ class Gramatica():
         length=0
         x=0 
         if(no_ter in self.terminales):   
-            Conjunto_First.extend(no_ter) #si nos llega un terminal como paramentro, lo agregamos directamente al Conjunto_First
+            Conjunto_First.append(no_ter) #si nos llega un terminal como paramentro, lo agregamos directamente al Conjunto_First
         else:
             for i in self.diccionario[no_ter]:  #Recorremos las reglas del no terminal
+                lista = i.split(" ")
+                if (len(lista)>1):
+                    i = lista[0]
                 x = 0
-                if((i[0] in self.terminales) or (i == 'lambda')): 
-                    if (i != 'lambda'):
+                if((i[0] in self.terminales) or (i in self.terminales)): 
+                    if (len(i) == 1):
                         Conjunto_First.extend(i[0]) #si el primer simbolo es un terminal lo añadimos directamente al First
-                    else:                                             
-                        if(('lambda' not in Conjunto_First)):
-                            Conjunto_First.append('lambda') #Agregamos lambda al Conjunto_First
+                    else:
+                        if (i == 'lambda'):                                             
+                            if(('lambda' not in Conjunto_First)):
+                                Conjunto_First.append(i) #Agregamos lambda al Conjunto_First
+                        else:
+                            Conjunto_First.append(i)
                 else:
-                        length=len(i)
-                        while(x<length): #Recorremos el consecuente completo
-                            if (i[x] != ' '):
-                                if (i[x] in self.terminales):
-                                    Conjunto_First.extend(i[x]) #Si es terminal, lo agregamos al conjunto first
-                                    x += 1
-                                    break
-                                else:
-                                    if('lambda' in self.diccionario[i[x]]):#Si lambda se encuentra entre los consecuentes del No_Terminal evaluado 
-                                        if (i[x] != no_ter): #Para evitar la recursion izq. preguntamos si el No Terminal es distinto al que estamos evaluando
-                                            Conjunto_First.extend(self.first(i[x]))
-                                            if ('lambda' in Conjunto_First):
-                                                long_regla =len(i)
-                                                if (('lambda' in firstset[i[x]]) and (i[x] != i[long_regla-1])):
-                                                    Conjunto_First.remove('lambda')
-                                        x += 1
-                                    else:
-                                        if (no_ter != i[x]):      #Para evitar la recursion izq                   
-                                            Conjunto_First.extend(self.first(i[x])) #Llamamos al metodo First, pero con otro No Terminal
-                                            if ('lambda' in Conjunto_First):
-                                                long_regla =len(i)
-                                                if (('lambda' in firstset[i[x]]) and (i[x] != i[long_regla-1])):
-                                                    Conjunto_First.remove('lambda')
-                                                    x += 1
-                                                    Conjunto_First.extend(self.first(i[x]))
-                                        else:
-                                            for j in self.diccionario[no_ter]: #Por cada consecuente del no terminal
-                                                if (j[0] != no_ter): #Para evitar la recursion izq
-                                                    Conjunto_First.extend(self.first(j[0]))
-                                        break
-                            else:
+                    length=len(lista)                   
+                    while(x<length): #Recorremos el consecuente completo  
+                        i = lista[x]                       
+                        if (i in self.terminales):
+                            Conjunto_First.append(i) #Si es terminal, lo agregamos al conjunto first
+                            x += 1
+                            break
+                        else:
+                            if('lambda' in self.diccionario[i]):#Si lambda se encuentra entre los consecuentes del No_Terminal evaluado 
+                                if (i != no_ter): #Para evitar la recursion izq. preguntamos si el No Terminal es distinto al que estamos evaluando
+                                    Conjunto_First.extend(self.first(i))
+                                    if ('lambda' in Conjunto_First):
+                                        if (('lambda' in firstset[i]) and (i != lista[-1])):
+                                            Conjunto_First.remove('lambda')
                                 x += 1
-        if (no_ter.isupper()): #Puede suceder (debido a como planteamos los follows) que llegue como parametro un terminal
+                            else:
+                                if (no_ter != i):      #Para evitar la recursion izq                   
+                                    Conjunto_First.extend(self.first(i)) #Llamamos al metodo First, pero con otro No Terminal
+                                    if ('lambda' in Conjunto_First):
+                                        if (('lambda' in firstset[i]) and (i != lista[-1])):
+                                            Conjunto_First.remove('lambda')
+                                            x += 1
+                                            Conjunto_First.extend(self.first(i))
+                                else:
+                                    for j in self.diccionario[no_ter]: #Por cada consecuente del no terminal
+                                        if (j[0] != no_ter): #Para evitar la recursion izq
+                                            Conjunto_First.extend(self.first(j[0]))
+                                break
+        if (no_ter[0].isupper()): #Puede suceder (debido a como planteamos los follows) que llegue como parametro un terminal
             firstset[no_ter]=Conjunto_First 
         return Conjunto_First
 
@@ -193,28 +195,29 @@ class Gramatica():
         for key in self.diccionario.keys():
             elemento = self.diccionario[key]
             for each in elemento:
+                lista = each.split(" ")
+                if (len(lista)>1):
+                    each = lista[0]
                 ctr=0
-                length=len(each)
-                for j in each:
+                length=len(lista)
+                for j in lista:
                     if(j==no_ter):
                         if(ctr<length-1):
-                            if (each[ctr+1] == ' '):
-                                ctr += 1
-                            if((no_ter != key)and('lambda'in self.first(each[ctr+1]))):
-                                for x in self.first(each[ctr+1]):
+                            if((no_ter != key)and('lambda'in self.first(lista[ctr+1]))):
+                                for x in self.first(lista[ctr+1]):
                                     if((x not in Confjunto_Follow)and(x!='lambda')):
-                                        Confjunto_Follow.extend(x)
+                                        Confjunto_Follow.append(x)
                                 for x in self.follow(key):
                                     if((x not in Confjunto_Follow)and(x!='lambda')):
-                                        Confjunto_Follow.extend(x)
+                                        Confjunto_Follow.append(x)
                             else:
-                                for x in self.first(each[ctr+1]):
+                                for x in self.first(lista[ctr+1]):
                                     if((x not in Confjunto_Follow)and(x!='lambda')):
-                                        Confjunto_Follow.extend(x)
+                                        Confjunto_Follow.append(x)
                         if((no_ter != key)and(ctr==length-1)):
                             for x in self.follow(key):
                                 if((x not in Confjunto_Follow)and(x!='lambda')):
-                                    Confjunto_Follow.extend(x)
+                                    Confjunto_Follow.append(x)
                     ctr+=1
                 ctr=0
         followset[no_ter]=Confjunto_Follow
