@@ -309,7 +309,7 @@ class Gramatica():
             else:
                 b = False
 
-        derivacion = derivacion.replace("  "," ",1)
+        derivacion = derivacion.replace("  "," ")
         return derivacion
 
     def armarTabla(self, ip): #id X
