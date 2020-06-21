@@ -260,13 +260,11 @@ class Gramatica():
         pila.append(axioma)
 
         indice = 0
+        lista = cadena.split(" ")
         
         while len(pila) > 0:
             tope = pila[len(pila)-1] #sacamos la variable de encima de la pila
-            lookahead = cadena[indice]
-            if (lookahead == ' '):
-                indice += 1
-                continue
+            lookahead = lista[indice]
             if tope == lookahead: #si la variable de encima de la pila coincide con lo que nos llega en la cadena,
                 pila.pop()              #se elimina de la pila
                 indice = indice + 1	    #incrementamos el indice para leer el siguiente look-a-head
@@ -293,12 +291,15 @@ class Gramatica():
                     derivacion += str(derivacion2)                
 
                 if elemento[1] != 'lambda':
-                    pila.pop()                                            
-                    i = len(elemento[1]) -1 
-                    while (i >= 0): #agregamos el consecuente de a un simbolo en la pila (de atras hacia adelante) 
-                        if (elemento[1][i] != ' '):
-                            pila.append(elemento[1][i])
-                        i -= 1          
+                    pila.pop() 
+                    if (len(lista[indice]) > 1) and (lookahead in elemento[1]):
+                        pila.append(lookahead)  
+                    else:
+                        i = len(elemento[1]) -1 
+                        while (i >= 0): #agregamos el consecuente de a un simbolo en la pila (de atras hacia adelante) 
+                            if (elemento[1][i] != ' '):
+                                pila.append(elemento[1][i])
+                            i -= 1          
                 else:
                     pila.pop()
         b = True
@@ -313,31 +314,35 @@ class Gramatica():
         derivacion = derivacion.replace("  "," ",1)
         return derivacion
 
-    def armarTabla(self, ip):
+    def armarTabla(self, ip): #id X
         for i in self.diccionario[ip]: 
-            if ip not in tabla: 
-                tabla[ip]={}
-            if i[0] in self.terminales and i !='lambda':
-                if i[0] not in tabla[ip]:
-                    tabla[ip][i[0]]=[]
-                tabla[ip][i[0]].append(str(ip +" -> "+ i))
+            lista = i.split(" ")
+            aux = i
+            if (len(lista)>1):
+                i = lista[0]
+            if (ip not in tabla): 
+                tabla[ip] = {}
+            if i in self.terminales and i !='lambda':
+                if i not in tabla[ip]:      
+                    tabla[ip][i]=[]
+                tabla[ip][i].append(str(ip +" -> "+ aux))
             elif i == 'lambda':
                 for k in followset[ip]:
                     if k not in tabla[ip]: 
                         tabla[ip][k]=[]
-                    tabla[ip][k].append(str(ip +" -> "+ i))
+                    tabla[ip][k].append(str(ip +" -> "+ aux))
             else: # es un no terminal
                 for k in firstset[ip]:
                     if (k != 'lambda'):
                         if k not in tabla[ip]: 
                             tabla[ip][k]=[]
-                        tabla[ip][k].append(str(ip + " -> "+ i))
+                        tabla[ip][k].append(str(ip + " -> "+ aux))
                     else: #si es lambda, nos tenemos que fijar cual regla es.
                         for k in followset[ip]:
                             if (k not in tabla[ip]): 
                                 tabla[ip][k]=[]
-                            if (i[-1] == i):   
-                                tabla[ip][k].append(str(ip +" -> "+ i))
+                            if (lista[-1] == i):   
+                                tabla[ip][k].append(str(ip +" -> "+ aux))
               
        
     def printTabla(self):
