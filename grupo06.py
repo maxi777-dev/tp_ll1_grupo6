@@ -11,17 +11,14 @@ class Gramatica():
         self.gramatica = gramatica
         self.producciones = gramatica.split("\n")
 
-
         antecedentes = [i.split(':', 1)[0] for i in self.producciones] #Obtenemos una lista con los antecedentes de la gramatica
         consecuentes = [i.split(':', 1)[1] for i in self.producciones] #Obtenemos una lista con los consecuentes de la gramatica
         self.producciones = [i.split(':', 1) for i in self.producciones] #Obtenemos una lista con todas las producciones de la gramatica
             
         self.diccionario = dict.fromkeys(antecedentes) #Creamos un diccionario con los antecedentes
-
         #-------------------------------------Lista de terminales de la gramatica-------------------------------------         
           
         self.terminales = [x for i in consecuentes for x in i.split(' ')] #Por cada consecuente, si esta separado por un espacio, lo dividimos con el .split(' ')
-        #self.terminales = [ elem for elem in self.terminales if elem[0].islower()] #Además, colocamos en la lista de terminales solo aquellos que comiencen con letra minuscula
         vector = []
         for i in self.terminales:
             if ((i == '') or (i[0].isupper())):
@@ -31,18 +28,9 @@ class Gramatica():
         self.terminales = vector
         self.terminales = list(set(self.terminales))
         self.terminales.append('$') #Agregamos el no terminal $
-        print('-------------------------------------------------------------------------------------------------------------------------')
-        print('Terminales: ', self.terminales)
 
         #-------------------------------------Lista de no terminales de la gramatica-------------------------------------
-
-        self.no_terminales = list(dict.fromkeys(antecedentes)) 
-        print('No Terminales: ', self.no_terminales)
-
-        #for regla in self.producciones:
-         #   regla[1] = regla[1].replace(" ","")        #saco los espacios de la gramatica                     
-        print("producciones: ", self.producciones)
-
+        self.no_terminales = list(dict.fromkeys(antecedentes))
         #-------------------------------------Realizamos un diccionario con las producciones (keys: no terminales, values: derivacion del NT)-------------------------------------
 
         for i in self.producciones: 
@@ -51,32 +39,6 @@ class Gramatica():
             else:
                 self.diccionario[i[0]].append(i[1]) #sino, insertamos el consecuente a la lista con un append. Esto se debe a que no podemos hacer
                                                     #un append a algo None
-        
-        print('Diccionario: ', self.diccionario) 
-        print('-------------------------------------------------------------------------------------------------------------------------')
-
-        #-------------------------------------Llamar al metodo isLL1-------------------------------------
-
-        """"esLL1 = self.isLL1()
-        #if (esLL1): 
-            print("La gramatica ES LL(1)")
-            print('La tabla generada para la gramatica es la siguiente:')
-            print(' ')
-            cadena = "(n,n)"
-            derivacion = self.parse(cadena)
-            print(' ')
-            if (derivacion.split("=> ")[-1] == cadena):
-                print("La cadena '" + cadena +"' PUEDE ser representada mediante la gramatica propuesta  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
-            else:
-                print("La cadena '" + cadena +"' NO PUEDE ser representada mediante la gramatica propuesta  ̿(∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. * ・ ｡ﾟ")
-            print(' ')
-            print('La cadena de derivacion de la cadena es la siguiente: ')
-            print(derivacion)
-            print(' ')
-        else:
-            print("La gramatica NO ES LL(1)")
-            print(' ')"""
-
         pass
 
     def isLL1(self):
@@ -96,9 +58,9 @@ class Gramatica():
                     var = str(keys) + ' -> ' + str(reglas)
                     vector_reglas.append(var)
         if (len(vector_reglas) > 0):
-            print("La gramática presenta Recursión a Izquierda en las siguientes reglas: ")
-            for reglas in vector_reglas: 
-                print(reglas)
+            #print("La gramática presenta Recursión a Izquierda en las siguientes reglas: ")
+            #for reglas in vector_reglas: 
+            #    print(reglas)
             return False
         
         for i in self.no_terminales:
@@ -119,10 +81,10 @@ class Gramatica():
             selecttset[key] = selectlist
             x += 1
 
-        print('FIRSTS: ', firstset)
-        print('FOLLOWS: ' , followset)        
-        print('SELECTS: ', selecttset)
-        print('-------------------------------------------------------------------------------------------------------------------------')
+        #print('FIRSTS: ', firstset)
+        #print('FOLLOWS: ' , followset)        
+        #print('SELECTS: ', selecttset)
+        #print('-------------------------------------------------------------------------------------------------------------------------')
 
         EsLL1 = True
         for key in selecttset.keys():
@@ -176,7 +138,7 @@ class Gramatica():
                                         if (('lambda' in firstset[i]) and (i != lista[-1])):
                                             Conjunto_First.remove('lambda')
                                             x += 1
-                                            Conjunto_First.extend(self.first(i))
+                                            Conjunto_First.extend(self.first(lista[x]))
                                 else:
                                     for j in self.diccionario[no_ter]: #Por cada consecuente del no terminal
                                         if (j[0] != no_ter): #Para evitar la recursion izq
@@ -207,9 +169,17 @@ class Gramatica():
                                 for x in self.first(lista[ctr+1]):
                                     if((x not in Confjunto_Follow)and(x!='lambda')):
                                         Confjunto_Follow.append(x)
-                                for x in self.follow(key):
-                                    if((x not in Confjunto_Follow)and(x!='lambda')):
-                                        Confjunto_Follow.append(x)
+                                long = len(lista)-1
+                                if (lista[ctr+1] == lista[long]):
+                                    for x in self.follow(key):
+                                        if((x not in Confjunto_Follow)and(x!='lambda')):
+                                            Confjunto_Follow.append(x)
+                                else:
+                                    while (('lambda' in self.first(lista[ctr+1])) or (lista[ctr+1] != lista[long])):
+                                        ctr += 1
+                                        for x in self.first(lista[ctr+1]):
+                                            if((x not in Confjunto_Follow)and(x!='lambda')):
+                                                Confjunto_Follow.append(x)
                             else:
                                 for x in self.first(lista[ctr+1]):
                                     if((x not in Confjunto_Follow)and(x!='lambda')):
@@ -245,15 +215,12 @@ class Gramatica():
         if (self.isLL1() == False):
             return None
 
-
         for i in self.no_terminales:
             self.armarTabla(i)
-        self.printTabla()
 
         axioma = self.no_terminales[0]
         derivacion = ""
-        pila = []
-        
+        pila = []        
         pila.append("$")
         pila.append(axioma)
 
@@ -269,8 +236,7 @@ class Gramatica():
             else:	
                 key = tope             
                 if ((key in self.terminales) or (lookahead not in tabla[key])): #si lo que esta en el tope de la pila es terminal o lo que leemos
-                    #bandera = False		                                        #de la cadena no se encuentra en la tabla, la cadena no pertenece
-                    break                                                       #a la gramatica
+                    break                                                       #de la cadena no se encuentra en la tabla, la cadena no pertenecea la gramatica
                 value = tabla[key][lookahead]
                 
                 elemento = value[0].split(" -> ") #nos quedamos con el consecuente de la regla
@@ -308,11 +274,10 @@ class Gramatica():
                 longitud -= 1
             else:
                 b = False
-
         derivacion = derivacion.replace("  "," ")
         return derivacion
 
-    def armarTabla(self, ip): #id X
+    def armarTabla(self, ip):
         for i in self.diccionario[ip]: 
             lista = i.split(" ")
             aux = i
@@ -342,12 +307,15 @@ class Gramatica():
                             if (lista[-1] == i):   
                                 tabla[ip][k].append(str(ip +" -> "+ aux))
               
-       
+    """   
+    Este es un metodo que definimos para imprimir la tabla en la terminal y ver si la realizaba correctamente 
+
     def printTabla(self):
         for i in tabla:
             for j in tabla[i]:
                 for k in tabla[i][j]:
                     print(i,":",j,":",k)
+    """
         
 
 firstset = {}
@@ -355,29 +323,5 @@ followset = {}
 selecttset = {}
 tabla = {}
 
-
 if __name__ == "__main__":
-    gramatica = Gramatica("S:A b B a\nS:d\nA:C A b\nA:B\nB:g S d\nB:lambda\nC:a\nC:e d")
-    #1) E:T A\nA:+ T A\nA:- T A\nA:lambda\nT:F B\nB:* F B\nB:/ F B\nB:lambda\nF:n\nF:( E ) ---> ES LL(1)
-    #2) E:E + T\nE:E - T\nE:T\nT:T * F\nT:T / F\nT:F\nF:n\nF:( E ) ---> NO ES LL(1)
-    #3) X:X Y\nX:e\nX:b\nX:lambda\nY:a\nY:d ---> NO ES LL(1)
-    #4) X:X Y\nX:A\nX:b\nX:lambda\nY:a\nY:d\nA:r ---> NO ES LL(1)
-    #5) S:A b\nS:B a\nA:a A\nA:a\nB:a ---> NO ES LL(1)
-    #6) X:a S\nS:a Z\nS:b\nZ:b\nZ:a A b\nZ:lambda\nA:a A\nA:lambda ---> ES LL(1)
-    #7) E:E + E\nE:E - E\nE:( E )\nE:n ---> NO ES LL(1)
-    #8) S:A B c\nA:a\nA:lambda\nB:b\nB:lambda ---> ES LL(1)
-    #9) S:a S e\nA:B\nA:b B e\nA:C\nB:c e\nB:f\nC:b ---> NO ES LL(1)
-    #10) F:X Y\nX:a B R\nX:a C Q\nB:b\nB:d\nC:e\nC:b\nR:r\nQ:q\nY:b ---> NO ES LL(1)
-    #11) S:A b B a\nS:d\nA:C A b\nA:B\nB:g S d\nB:lambda\nC:a\nC:e d ---> ES LL(1)
-    #12) S:A B\nA: a A\nA:c\nA:lambda\nB:b B\nB:d
-    #13) S:( L )\nS:n\nL:S X\nX:, S X\nX:lambda
-
-    """ PROBLEMAS QUE FALTAN SOLUCIONAR EN LOS FIRST:
-            1) En la G de ejemplo del TP, hay un X -> A y A no aparece del lado de los antecedentes. AHI ROMPE
-            2) En la gramatica 10, en los Fi de F, aparecen 2 'a' y tiene que aparecer una.
-                Igualmente, resuelve bien que no es LL(1)
-            3) No anda con por ejemplo: Ab -> c [S:c X\nX:Ab X\nX:lambda\nAb:a b] SI TENEMOS NO TERMINALES CON MAS DE UNA LETRA NO ANDA
-
-        COMENTARIOS:
-            4) Comentar follow y armartabla
-    """
+    gramatica = Gramatica("") 
